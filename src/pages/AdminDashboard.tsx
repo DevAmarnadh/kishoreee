@@ -201,27 +201,25 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8 px-2 sm:px-4">
+      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage user queries and project updates</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Manage user queries and project updates</p>
         </div>
-
         {/* Project Update Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Project Updates</h2>
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Project Updates</h2>
             <button
               onClick={() => setShowUpdateForm(!showUpdateForm)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
               <Send className="w-4 h-4" />
               <span>{showUpdateForm ? 'Cancel' : 'Send Update'}</span>
             </button>
           </div>
-
           {showUpdateForm && (
             <form onSubmit={handleSendUpdate} className="space-y-4">
               <div>
@@ -300,14 +298,13 @@ const AdminDashboard: React.FC = () => {
             </form>
           )}
         </div>
-
         {/* Project Add Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Add New Project</h2>
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Add New Project</h2>
             <button
               onClick={() => setShowProjectForm(!showProjectForm)}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
             >
               <PlusCircle className="w-4 h-4" />
               <span>{showProjectForm ? 'Cancel' : 'Add Project'}</span>
@@ -365,11 +362,11 @@ const AdminDashboard: React.FC = () => {
           )}
           {/* List of existing projects for reference */}
           {projects.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-4">Existing Projects</h3>
-              <ul className="space-y-2">
+            <div className="mt-6 sm:mt-8 overflow-x-auto">
+              <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Existing Projects</h3>
+              <ul className="space-y-2 min-w-[300px]">
                 {projects.map(p => (
-                  <li key={p.id} className="border rounded px-3 py-2 bg-gray-50">
+                  <li key={p.id} className="border rounded px-3 py-2 bg-gray-50 text-sm sm:text-base">
                     <span className="font-medium">{p.title}</span> - <span className="text-gray-600">{p.category}</span>
                   </li>
                 ))}
@@ -377,9 +374,8 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
         </div>
-
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -420,10 +416,9 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
-
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="flex space-x-4">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               onClick={() => setFilter('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -456,11 +451,10 @@ const AdminDashboard: React.FC = () => {
             </button>
           </div>
         </div>
-
         {/* Queries */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
               User Queries ({filteredQueries.length})
             </h2>
           </div>
