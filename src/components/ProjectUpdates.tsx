@@ -19,12 +19,15 @@ const ProjectUpdates: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !user.uid) return;
 
-    // Query for updates that are either for all users or specific to this user
+    // Only run the query if user.uid is defined and not empty
+    const userIds = [user.uid, null].filter(Boolean);
+    if (userIds.length === 0) return;
+
     const q = query(
       collection(db, 'projectUpdates'),
-      where('userId', 'in', [user.uid, null]),
+      where('userId', 'in', userIds),
       orderBy('timestamp', 'desc')
     );
 
