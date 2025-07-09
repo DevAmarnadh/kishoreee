@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { MessageSquare, Clock, CheckCircle, User, Mail, Calendar, Check, Send, AlertCircle, PlusCircle } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, User, Mail, Calendar, Check, Send, AlertCircle, PlusCircle, FileText, Phone } from 'lucide-react';
 
 interface Query {
   id: string;
@@ -38,6 +38,21 @@ interface Project {
   githubUrl: string;
 }
 
+interface ProjectRequirement {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  projectName: string;
+  projectType: string;
+  budget: string;
+  timeline: string;
+  description: string;
+  features: string;
+  timestamp: any;
+  status: 'pending' | 'reviewed' | 'contacted';
+}
+
 const AdminDashboard: React.FC = () => {
   const [queries, setQueries] = useState<Query[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +82,10 @@ const AdminDashboard: React.FC = () => {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
+  // Project requirements states
+  const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
+  const [requirementFilter, setRequirementFilter] = useState<'all' | 'pending' | 'reviewed' | 'contacted'>('all');
+
   useEffect(() => {
     const q = query(
       collection(db, 'queries'),
@@ -95,6 +114,15 @@ const AdminDashboard: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const q = query(collection(db, 'projectRequirements'), orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const requirementsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ProjectRequirement[];
+      setProjectRequirements(requirementsData);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleMarkResolved = async (queryId: string) => {
     try {
       await updateDoc(doc(db, 'queries', queryId), {
@@ -102,6 +130,16 @@ const AdminDashboard: React.FC = () => {
       });
     } catch (error) {
       console.error('Error updating query status:', error);
+    }
+  };
+
+  const handleUpdateRequirementStatus = async (requirementId: string, status: 'pending' | 'reviewed' | 'contacted') => {
+    try {
+      await updateDoc(doc(db, 'projectRequirements', requirementId), {
+        status: status
+      });
+    } catch (error) {
+      console.error('Error updating requirement status:', error);
     }
   };
 
@@ -179,6 +217,11 @@ const AdminDashboard: React.FC = () => {
   const filteredQueries = queries.filter(query => {
     if (filter === 'all') return true;
     return query.status === filter;
+  });
+
+  const filteredRequirements = projectRequirements.filter(requirement => {
+    if (requirementFilter === 'all') return true;
+    return requirement.status === requirementFilter;
   });
 
   if (userProfile?.role !== 'admin') {
@@ -374,6 +417,192 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Project Requirements Section */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Project Requirements</h2>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setRequirementFilter('all')}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  requirementFilter === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                All ({projectRequirements.length})
+              </button>
+              <button
+                onClick={() => setRequirementFilter('pending')}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  requirementFilter === 'pending'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Pending ({projectRequirements.filter(r => r.status === 'pending').length})
+              </button>
+              <button
+                onClick={() => setRequirementFilter('reviewed')}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  requirementFilter === 'reviewed'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Reviewed ({projectRequirements.filter(r => r.status === 'reviewed').length})
+              </button>
+              <button
+                onClick={() => setRequirementFilter('contacted')}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  requirementFilter === 'contacted'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Contacted ({projectRequirements.filter(r => r.status === 'contacted').length})
+              </button>
+            </div>
+          </div>
+
+          {filteredRequirements.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No project requirements</h3>
+              <p className="text-gray-600">
+                {requirementFilter === 'all' 
+                  ? "No project requirements have been submitted yet."
+                  : `No ${requirementFilter} requirements at the moment.`
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {filteredRequirements.map((requirement) => (
+                <div key={requirement.id} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        {requirement.projectName}
+                      </h3>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                        <div className="flex items-center space-x-1">
+                          <User className="w-4 h-4" />
+                          <span>{requirement.name}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Mail className="w-4 h-4" />
+                          <span>{requirement.email}</span>
+                        </div>
+                        {requirement.phone && (
+                          <div className="flex items-center space-x-1">
+                            <Phone className="w-4 h-4" />
+                            <span>{requirement.phone}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(requirement.timestamp)}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {requirement.projectType && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            {requirement.projectType}
+                          </span>
+                        )}
+                        {requirement.budget && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                            {requirement.budget}
+                          </span>
+                        )}
+                        {requirement.timeline && (
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                            {requirement.timeline}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        requirement.status === 'pending' 
+                          ? 'bg-orange-100 text-orange-800' 
+                          : requirement.status === 'reviewed'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {requirement.status === 'pending' ? (
+                          <>
+                            <Clock className="w-3 h-3 mr-1" />
+                            Pending
+                          </>
+                        ) : requirement.status === 'reviewed' ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Reviewed
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-3 h-3 mr-1" />
+                            Contacted
+                          </>
+                        )}
+                      </span>
+                      
+                      <div className="flex space-x-1">
+                        {requirement.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateRequirementStatus(requirement.id, 'reviewed')}
+                              className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                            >
+                              Review
+                            </button>
+                            <button
+                              onClick={() => handleUpdateRequirementStatus(requirement.id, 'contacted')}
+                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
+                            >
+                              Contact
+                            </button>
+                          </>
+                        )}
+                        {requirement.status === 'reviewed' && (
+                          <button
+                            onClick={() => handleUpdateRequirementStatus(requirement.id, 'contacted')}
+                            className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
+                          >
+                            Contact
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-1">Project Description:</h4>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {requirement.description}
+                      </p>
+                    </div>
+                    
+                    {requirement.features && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Key Features:</h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {requirement.features}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">

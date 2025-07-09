@@ -88,13 +88,6 @@ const Header: React.FC = () => {
             ) : (
               <div className="flex items-center space-x-4">
                 <Link 
-                  to="/admin/login" 
-                  className="flex items-center space-x-1 px-3 py-2 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors"
-                >
-                  <Shield className="w-4 h-4" />
-                  <span>Admin Login</span>
-                </Link>
-                <Link 
                   to="/login" 
                   className="text-gray-700 hover:text-blue-600 transition-colors"
                 >
@@ -184,14 +177,6 @@ const Header: React.FC = () => {
                 </div>
               ) : (
                 <div className="pt-4 border-t border-gray-200 space-y-4">
-                  <Link 
-                    to="/admin/login" 
-                    className="flex items-center space-x-2 text-orange-700"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span>Admin Login</span>
-                  </Link>
                   <Link 
                     to="/login" 
                     className="text-gray-700"
